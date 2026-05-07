@@ -321,4 +321,3 @@ Login with your superuser credentials to manage all data directly.
 - UserName: Admin
 - Password: 1234
 
-

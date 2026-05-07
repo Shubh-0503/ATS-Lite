@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Applicants — {{ job.title }}{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <a href="{% url 'job_detail' job.pk %}" class="text-sm text-slate-500 hover:text-indigo-600 mb-2 inline-block">
+      ← {{ job.title }}
+    </a>
+    <h1 class="font-display text-2xl font-bold text-slate-900">
+      Ranked Applicants
+    </h1>
+    <p class="text-slate-500 text-sm mt-1">{{ total }} applicant{{ total|pluralize }} · sorted by skill match</p>
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<form method="get" class="flex gap-3 mb-6">
+  <div class="flex items-center gap-2">
+    <label class="text-sm font-medium text-slate-700">Min. Score:</label>
+    <input type="number" name="min_score" value="{{ min_score }}" min="0" max="100"
+      class="w-20 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+      placeholder="0" />
+  </div>
+  <button type="submit"
+    class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 transition">
+    Filter
+  </button>
+  {% if min_score %}
+  <a href="?" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition">
+    Clear
+  </a>
+  {% endif %}
+</form>
+
+{% if page_obj %}
+<!-- Table -->
+<div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="border-b border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+        <th class="px-6 py-3 text-left">#</th>
+        <th class="px-6 py-3 text-left">Candidate</th>
+        <th class="px-6 py-3 text-left">Skills</th>
+        <th class="px-6 py-3 text-left">Match Score</th>
+        <th class="px-6 py-3 text-left">Status</th>
+        <th class="px-6 py-3 text-left">Applied</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for item in page_obj %}
+      {% with app=item.application %}
+      <tr class="hover:bg-slate-50 transition">
+        <td class="px-6 py-4 text-slate-400 font-medium">
+          {{ forloop.counter }}
+        </td>
+
+        <td class="px-6 py-4">
+          <div class="font-medium text-slate-900">{{ app.candidate.name }}</div>
+          <div class="text-slate-400 text-xs">{{ app.candidate.email }}</div>
+        </td>
+
+        <td class="px-6 py-4">
+          <div class="flex flex-wrap gap-1 max-w-xs">
+            {% for skill in item.matched %}
+            <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-xs">{{ skill }}</span>
+            {% endfor %}
+            {% for skill in item.missing %}
+            <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-xs line-through">{{ skill }}</span>
+            {% endfor %}
+          </div>
+        </td>
+
+        <td class="px-6 py-4">
+          <div class="flex items-center gap-2">
+            <!-- Score ring / bar -->
+            <div class="relative w-10 h-10">
+              <svg viewBox="0 0 36 36" class="w-10 h-10 -rotate-90">
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e2e8f0" stroke-width="3"/>
+                <circle cx="18" cy="18" r="15.9" fill="none"
+                  stroke="{% if item.score >= 76 %}#10b981{% elif item.score >= 51 %}#3b82f6{% elif item.score >= 26 %}#f59e0b{% else %}#ef4444{% endif %}"
+                  stroke-width="3"
+                  stroke-dasharray="{{ item.score }} 100"
+                  stroke-linecap="round"/>
+              </svg>
+              <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-slate-700">
+                {{ item.score|floatformat:0 }}
+              </span>
+            </div>
+            <span class="text-xs text-slate-500">{{ item.label }}</span>
+          </div>
+        </td>
+
+        <td class="px-6 py-4">
+          <span class="px-2 py-1 rounded-lg text-xs font-medium
+            {% if app.status == 'hired' %}bg-emerald-100 text-emerald-700
+            {% elif app.status == 'shortlisted' %}bg-blue-100 text-blue-700
+            {% elif app.status == 'rejected' %}bg-red-100 text-red-600
+            {% elif app.status == 'reviewed' %}bg-amber-100 text-amber-700
+            {% else %}bg-slate-100 text-slate-600{% endif %}">
+            {{ app.get_status_display }}
+          </span>
+        </td>
+
+        <td class="px-6 py-4 text-slate-400 text-xs">
+          {{ app.applied_at|date:"M d" }}
+        </td>
+      </tr>
+      {% endwith %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center gap-2 mt-6">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}{% if min_score %}&min_score={{ min_score }}{% endif %}"
+    class="px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50">← Prev</a>
+  {% endif %}
+  <span class="px-4 py-2 text-sm text-slate-500">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}{% if min_score %}&min_score={{ min_score }}{% endif %}"
+    class="px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50">Next →</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="text-center py-16 bg-white rounded-2xl border border-slate-200">
+  <p class="text-slate-500">No applicants yet for this position.</p>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Delete {{ job.title }}{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto text-center py-12">
+  <h1 class="font-display text-2xl font-bold text-slate-900 mb-2">Deactivate Job?</h1>
+  <p class="text-slate-500 mb-6">This will hide "<strong>{{ job.title }}</strong>" from listings. Application data is preserved.</p>
+  <form method="post" class="flex gap-3 justify-center">
+    {% csrf_token %}
+    <button type="submit" class="px-6 py-2.5 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition">Yes, Deactivate</button>
+    <a href="{% url 'job_detail' job.pk %}" class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Cancel</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}{{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm text-slate-500 mb-6">
+    <a href="{% url 'job_list' %}" class="hover:text-indigo-600">Jobs</a>
+    <span>/</span>
+    <span class="text-slate-800">{{ job.title }}</span>
+  </div>
+
+  <!-- Job Card -->
+  <div class="bg-white rounded-2xl border border-slate-200 p-8 mb-6">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h1 class="font-display text-3xl font-bold text-slate-900 mb-2">{{ job.title }}</h1>
+        <div class="flex items-center gap-3 text-sm text-slate-500">
+          <span>Posted {{ job.created_at|date:"M d, Y" }}</span>
+          <span>·</span>
+          <span>{{ applicant_count }} applicant{{ applicant_count|pluralize }}</span>
+          {% if job.created_by %}
+          <span>·</span>
+          <span>by {{ job.created_by.username }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% if user.is_authenticated %}
+      <div class="flex gap-2">
+        <a href="{% url 'job_edit' job.pk %}"
+          class="text-sm px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition">
+          Edit
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if job.description %}
+    <div class="mb-6">
+      <h2 class="font-semibold text-slate-800 mb-2">About the role</h2>
+      <p class="text-slate-600 leading-relaxed">{{ job.description }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Required Skills -->
+    <div class="mb-8">
+      <h2 class="font-semibold text-slate-800 mb-3">Required Skills</h2>
+      <div class="flex flex-wrap gap-2">
+        {% for skill in job.get_skills_list %}
+        <span class="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-medium border border-indigo-100">
+          {{ skill }}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="flex flex-col sm:flex-row gap-3">
+      <a href="{% url 'apply_form' job.pk %}"
+        class="flex-1 text-center py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition">
+        Apply for this Position
+      </a>
+      {% if user.is_authenticated %}
+      <a href="{% url 'candidate_list' job.pk %}"
+        class="flex-1 text-center py-3 rounded-xl border border-slate-200 text-slate-700 font-medium hover:bg-slate-50 transition">
+        View Applicants ({{ applicant_count }})
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <a href="{% url 'job_list' %}" class="text-sm text-slate-500 hover:text-indigo-600">← Back to all jobs</a>
+</div>
+{% endblock %}

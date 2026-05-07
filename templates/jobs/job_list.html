@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Job Listings{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+  <div>
+    <h1 class="font-display text-3xl font-bold text-slate-900">Open Positions</h1>
+    <p class="text-slate-500 mt-1">{{ total_count }} job{{ total_count|pluralize }} available</p>
+  </div>
+  {% if user.is_authenticated %}
+  <a href="{% url 'job_create' %}"
+    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    Post a Job
+  </a>
+  {% endif %}
+</div>
+
+<!-- Search Bar -->
+<form method="get" class="mb-6">
+  <div class="flex gap-3">
+    <div class="flex-1 relative">
+      <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input type="text" name="q" value="{{ query }}"
+        placeholder="Search by title, skill, or keyword..."
+        class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+    </div>
+    <button type="submit"
+      class="px-5 py-2.5 rounded-xl bg-slate-900 text-white font-medium text-sm hover:bg-slate-700 transition">
+      Search
+    </button>
+    {% if query %}
+    <a href="{% url 'job_list' %}"
+      class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition">
+      Clear
+    </a>
+    {% endif %}
+  </div>
+</form>
+
+{% if query %}
+<p class="text-sm text-slate-500 mb-4">Results for "<strong>{{ query }}</strong>"</p>
+{% endif %}
+
+<!-- Job Cards Grid -->
+{% if page_obj %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+  {% for job in page_obj %}
+  <div class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-indigo-200 transition-all group">
+    <!-- Job Header -->
+    <div class="flex items-start justify-between mb-3">
+      <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0H8m8 0a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2"/>
+        </svg>
+      </div>
+      <span class="text-xs text-slate-400">{{ job.created_at|date:"M d, Y" }}</span>
+    </div>
+
+    <h2 class="font-semibold text-slate-900 text-base mb-2 group-hover:text-indigo-600 transition-colors">
+      {{ job.title }}
+    </h2>
+
+    {% if job.description %}
+    <p class="text-sm text-slate-500 mb-3 line-clamp-2">{{ job.description }}</p>
+    {% endif %}
+
+    <!-- Skills Tags -->
+    <div class="flex flex-wrap gap-1.5 mb-4">
+      {% for skill in job.get_skills_list %}
+      <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium">
+        {{ skill }}
+      </span>
+      {% endfor %}
+    </div>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+      <span class="text-xs text-slate-400">
+        {{ job.applications.count }} applicant{{ job.applications.count|pluralize }}
+      </span>
+      <div class="flex gap-2">
+        {% if user.is_authenticated %}
+        <a href="{% url 'candidate_list' job.pk %}"
+          class="text-xs px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition">
+          View Applicants
+        </a>
+        {% endif %}
+        <a href="{% url 'apply_form' job.pk %}"
+          class="text-xs px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition font-medium">
+          Apply Now
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="flex items-center justify-center gap-2 mt-8">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}"
+    class="px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition">
+    ← Previous
+  </a>
+  {% endif %}
+
+  <span class="px-4 py-2 text-sm text-slate-600">
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+  </span>
+
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}"
+    class="px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition">
+    Next →
+  </a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<!-- Empty state -->
+<div class="text-center py-16">
+  <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+    <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+  </div>
+  <h3 class="font-semibold text-slate-700">No jobs found</h3>
+  <p class="text-slate-500 text-sm mt-1">
+    {% if query %}Try a different search term.{% else %}No active job listings at the moment.{% endif %}
+  </p>
+  {% if user.is_authenticated %}
+  <a href="{% url 'job_create' %}"
+    class="inline-flex mt-4 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700 transition">
+    Post the First Job
+  </a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

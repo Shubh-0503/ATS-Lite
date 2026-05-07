@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Application Submitted{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto text-center">
+
+  <!-- Success Icon -->
+  <div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-6">
+    <svg class="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+    </svg>
+  </div>
+
+  <h1 class="font-display text-3xl font-bold text-slate-900 mb-2">Application Submitted!</h1>
+  <p class="text-slate-500 mb-8">
+    {{ application.candidate.name }}, your application for
+    <strong>{{ application.job.title }}</strong> has been received.
+  </p>
+
+  <!-- Score Card -->
+  <div class="bg-white rounded-2xl border border-slate-200 p-8 mb-6 text-left">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="font-semibold text-slate-800">Your Skill Match Score</h2>
+      <span class="text-3xl font-display font-bold
+        {% if details.score >= 76 %}text-emerald-600
+        {% elif details.score >= 51 %}text-blue-600
+        {% elif details.score >= 26 %}text-amber-600
+        {% else %}text-red-500{% endif %}">
+        {{ details.score }}%
+      </span>
+    </div>
+
+    <!-- Score bar -->
+    <div class="w-full bg-slate-100 rounded-full h-2.5 mb-4">
+      <div class="h-2.5 rounded-full transition-all
+        {% if details.score >= 76 %}bg-emerald-500
+        {% elif details.score >= 51 %}bg-blue-500
+        {% elif details.score >= 26 %}bg-amber-500
+        {% else %}bg-red-400{% endif %}"
+        style="width: {{ details.score }}%"></div>
+    </div>
+    <p class="text-sm font-medium text-slate-600 mb-6">{{ label }}</p>
+
+    <!-- Matched Skills -->
+    {% if details.matched %}
+    <div class="mb-4">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">✓ Skills you have</p>
+      <div class="flex flex-wrap gap-2">
+        {% for skill in details.matched %}
+        <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-medium border border-emerald-100">
+          {{ skill }}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Missing Skills -->
+    {% if details.missing %}
+    <div>
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">✗ Skills to develop</p>
+      <div class="flex flex-wrap gap-2">
+        {% for skill in details.missing %}
+        <span class="px-2.5 py-1 rounded-lg bg-red-50 text-red-600 text-xs font-medium border border-red-100">
+          {{ skill }}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <a href="{% url 'job_list' %}"
+    class="inline-flex px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition">
+    Browse More Jobs
+  </a>
+</div>
+{% endblock %}

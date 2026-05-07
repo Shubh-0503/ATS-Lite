@@ -39,7 +39,7 @@ A production-ready Applicant Tracking System (ATS) featuring job management, can
 ### 1. Clone & Setup
 
 ```bash
-git clone https://github.com/yourusername/ats-lite.git
+git clone https://github.com/Shubh-0503/ATS-Lite.git
 cd ats-lite
 
 # Create virtual environment
